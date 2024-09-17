@@ -1,5 +1,5 @@
 agents:
-  queue: hosted
+  queue: linux
 
 cache:
   - "/tmp/cache/go-build"
