@@ -1,6 +1,14 @@
 agents:
   queue: hosted
 
+cache:
+  - "/tmp/cache/go-build"
+  - "/tmp/cache/go-mod"
+
+env:
+  GOMODCACHE: "/tmp/cache/go-mod"
+  GOCACHE: "/tmp/cache/go-build"
+
 steps:
   - name: ":golangci-lint: lint"
     command: golangci-lint run --verbose --timeout 3m
@@ -9,6 +17,10 @@ steps:
           config: .buildkite/docker-compose.yaml
           run: golangci-lint
           tty: true
+          propagate-environment: true
+          volumes:
+            - "/tmp/cache/go-build:/tmp/cache/go-build"
+            - "/tmp/cache/go-mod:/tmp/cache/go-mod"
 
   - name: ":go: test"
     artifact_paths:
@@ -23,6 +35,10 @@ steps:
           run: golangci-lint
           tty: true
           mount-buildkite-agent: true
+          propagate-environment: true
+          volumes:
+            - "/tmp/cache/go-build:/tmp/cache/go-build"
+            - "/tmp/cache/go-mod:/tmp/cache/go-mod"
 
   - wait
 
@@ -46,9 +62,13 @@ steps:
           env:
             - GOOS={{matrix}}
           mount-buildkite-agent: true
+          propagate-environment: true
           run: goreleaser
           shell: false
           tty: true
+          volumes:
+            - "/tmp/cache/go-build:/tmp/cache/go-build"
+            - "/tmp/cache/go-mod:/tmp/cache/go-mod"
 
   - block: ":package: Create a release?"
     prompt: "Fill out the tag to create for this release"
